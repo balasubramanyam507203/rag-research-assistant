@@ -22,6 +22,7 @@ This project is being built incrementally to cover major RAG types and concepts:
 
 ## Project Status
 Step 1 completed: Project setup and folder structure.
+Step 2 completed: PDF document loading and text extraction.
 
 ## Planned Modules
 - Document loading
