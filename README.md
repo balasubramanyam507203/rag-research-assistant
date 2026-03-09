@@ -23,6 +23,9 @@ This project is being built incrementally to cover major RAG types and concepts:
 ## Project Status
 Step 1 completed: Project setup and folder structure.
 Step 2 completed: PDF document loading and text extraction.
+Step 3 completed: Document chunking with source-preserving metadata.
+Step 4 completed: Chunk embeddings generated for semantic search.
+
 
 ## Planned Modules
 - Document loading
