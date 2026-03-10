@@ -1,39 +1,81 @@
+import streamlit as st
+
 from src.document_loader import load_documents
 from src.text_chunker import chunk_documents
 from src.embeddings import generate_embeddings
 from src.vector_store import build_and_save_vector_store
 from src.rag_pipeline import generate_rag_answer
 
-def main() -> None:
+
+st.set_page_config(page_title="RAG Research Assistant", page_icon="📚", layout="wide")
+
+
+@st.cache_resource
+def setup_vector_store() -> dict:
     documents = load_documents()
     chunked_documents = chunk_documents(documents)
     chunks, embeddings = generate_embeddings(chunked_documents)
+    build_and_save_vector_store(chunks, embeddings)
 
-    build_and_save_vector_store(chunks,embeddings)
+    return {
+        "documents": documents,
+        "chunks": chunked_documents,
+        "embeddings": embeddings,
+    }
 
-    query = "What is few-shot tabular classification?"
-    result = generate_rag_answer(query=query, top_k=3)
+
+def main() -> None:
+    st.title("📚 RAG Research Assistant")
+    st.write("Ask questions about your research PDFs using Retrieval-Augmented Generation.")
+
+    if "system_ready" not in st.session_state:
+        st.session_state.system_ready = False
+        st.session_state.system_data = None
+
+    if not st.session_state.system_ready:
+        if st.button("Initialize RAG System"):
+            with st.spinner("Loading documents, generating embeddings, and building FAISS index..."):
+                try:
+                    st.session_state.system_data = setup_vector_store()
+                    st.session_state.system_ready = True
+                    st.success("RAG system initialized successfully.")
+                except Exception as error:
+                    st.error(f"Initialization failed: {error}")
+                    return
+        return
+
+    data = st.session_state.system_data
+
+    st.sidebar.header("System Status")
+    st.sidebar.write(f"Documents loaded: {len(data['documents'])}")
+    st.sidebar.write(f"Chunks created: {len(data['chunks'])}")
+    st.sidebar.write(f"Embeddings generated: {len(data['embeddings'])}")
+
+    query = st.text_input("Enter your question:")
+
+    if st.button("Generate Answer"):
+        if not query.strip():
+            st.warning("Please enter a question.")
+            return
+
+        with st.spinner("Generating answer..."):
+            try:
+                result = generate_rag_answer(query=query, top_k=3)
+
+                st.subheader("Answer")
+                st.write(result["answer"])
+
+                st.subheader("Sources Used")
+                for chunk in result["retrieved_chunks"]:
+                    with st.expander(
+                        f"Rank {chunk['rank']} | {chunk['source']} | {chunk['chunk_id']}"
+                    ):
+                        st.write(f"**Distance:** {chunk['distance']:.4f}")
+                        st.write(chunk["text"])
+
+            except Exception as error:
+                st.error(f"Error while generating answer: {error}")
 
 
-    print(f"Loaded {len(documents)} documents(s).")
-    print(f"Created {len(chunked_documents)} chunk(s).\n")
-    print(f"Generated {len(embeddings)} embedding(s).\n")
-    print("FAISS index created and saved.\n")
-
-    print(f"Question: {result['query']}\n")
-    print("Answer:\n")
-    print(result["answer"])
-    print("\n" + "=" * 80)
-    print("Sources used:\n")
-
-    for chunk in result["retrieved_chunks"]:
-        
-        print(f"Rank        : {chunk['rank']}")
-        print(f"Distance    : {chunk['distance']:.4f}")
-        print(f"Source      : {chunk['source']}")
-        print(f"Chunk ID    : {chunk['chunk_id']}")
-        print("-" * 80)
-
-   
 if __name__ == "__main__":
     main()

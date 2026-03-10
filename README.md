@@ -28,7 +28,12 @@ Step 4 completed: Chunk embeddings generated for semantic search.
 Step 5 completed: Vector database and retrieval pipeline created using FAISS.
 Step 6 completed: Retriever flow now returns ranked chunks and formatted context for generation.
 Step 7 completed: End-to-end basic RAG pipeline now generates grounded answers.
+Step 8 completed: Basic RAG Research Assistant now has a live Streamlit interface.
 
+## Run Locally
+
+```bash
+streamlit run app.py
 
 ## Planned Modules
 - Document loading
