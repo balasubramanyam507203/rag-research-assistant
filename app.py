@@ -2,7 +2,7 @@ from src.document_loader import load_documents
 from src.text_chunker import chunk_documents
 from src.embeddings import generate_embeddings
 from src.vector_store import build_and_save_vector_store
-from src.retriever import prepare_rag_context
+from src.rag_pipeline import generate_rag_answer
 
 def main() -> None:
     documents = load_documents()
@@ -12,7 +12,7 @@ def main() -> None:
     build_and_save_vector_store(chunks,embeddings)
 
     query = "What is few-shot tabular classification?"
-    rag_data = prepare_rag_context(query=query, top_k=3)
+    result = generate_rag_answer(query=query, top_k=3)
 
 
     print(f"Loaded {len(documents)} documents(s).")
@@ -20,22 +20,20 @@ def main() -> None:
     print(f"Generated {len(embeddings)} embedding(s).\n")
     print("FAISS index created and saved.\n")
 
-    print(f"Query: {rag_data['query']}\n")
-    print("Retrieved chunks:\n")
+    print(f"Question: {result['query']}\n")
+    print("Answer:\n")
+    print(result["answer"])
+    print("\n" + "=" * 80)
+    print("Sources used:\n")
 
-    for chunk in rag_data["retrieved_chunks"]:
-        preview = chunk["text"][:180].replace("\n", " ")
+    for chunk in result["retrieved_chunks"]:
+        
         print(f"Rank        : {chunk['rank']}")
         print(f"Distance    : {chunk['distance']:.4f}")
         print(f"Source      : {chunk['source']}")
         print(f"Chunk ID    : {chunk['chunk_id']}")
-        print(f"Preview     : {preview}")
         print("-" * 80)
 
-    print("\nFormatted context for LLM:\n")
-    print(rag_data["context"][:1200])
-    
-
-
+   
 if __name__ == "__main__":
     main()

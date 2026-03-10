@@ -25,6 +25,9 @@ Step 1 completed: Project setup and folder structure.
 Step 2 completed: PDF document loading and text extraction.
 Step 3 completed: Document chunking with source-preserving metadata.
 Step 4 completed: Chunk embeddings generated for semantic search.
+Step 5 completed: Vector database and retrieval pipeline created using FAISS.
+Step 6 completed: Retriever flow now returns ranked chunks and formatted context for generation.
+Step 7 completed: End-to-end basic RAG pipeline now generates grounded answers.
 
 
 ## Planned Modules
