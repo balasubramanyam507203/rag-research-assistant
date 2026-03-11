@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import streamlit as st
+import pandas as pd
 
 from src.config import DATA_DIR
 from src.document_loader import load_documents, get_pdf_files
@@ -8,6 +9,7 @@ from src.text_chunker import chunk_documents
 from src.embeddings import generate_embeddings
 from src.vector_store import build_and_save_vector_store
 from src.rag_pipeline import generate_rag_answer
+from src.evaluator import evaluate_rag_system
 
 
 st.set_page_config(page_title="RAG Research Assistant", page_icon="📚", layout="wide")
@@ -141,6 +143,16 @@ def main() -> None:
 
             except Exception as error:
                 st.error(f"Error while generating answer: {error}")
+
+    st.subheader("Evaluation")
+    if st.button("Run Evaluation"):
+        with st.spinner("Running evaluation..."):
+            try:
+                eval_df = evaluate_rag_system()
+                st.success("Evaluation completed.")
+                st.dataframe(eval_df)
+            except Exception as error:
+                st.error(f"Error while running evaluation: {error}")
 
 
 if __name__ == "__main__":

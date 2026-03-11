@@ -32,6 +32,15 @@ Step 8 completed: Basic RAG Research Assistant now has a live Streamlit interfac
 Step 9 completed: Advanced RAG now uses hybrid retrieval (FAISS + BM25).
 Step 10 completed: Advanced RAG now uses hybrid retrieval plus reranking.
 Step 11 completed: Advanced RAG now uses query expansion, hybrid retrieval, and reranking.
+Step 12 completed: Evaluation layer added for retrieval and answer inspection.
+
+
+
+## Evaluation
+- Predefined evaluation questions are stored in `evaluation/eval_questions.json`
+- Results are saved to `evaluation/evaluation_results.csv`
+- Current evaluation checks whether expected source documents appear in retrieved results
+
 
 ## Run Locally
 
