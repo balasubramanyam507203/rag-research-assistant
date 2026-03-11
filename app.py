@@ -30,7 +30,7 @@ def setup_vector_store() -> dict:
 
 def main() -> None:
     st.title("📚 RAG Research Assistant")
-    st.write("Ask questions about your research PDFs using Hybrid Retrieval RAG.")
+    st.write("Ask questions about your research PDFs using Hybrid Retrieval + Reranking.")
 
     try:
         data = setup_vector_store()
@@ -42,7 +42,7 @@ def main() -> None:
     st.sidebar.write(f"Documents loaded: {len(data['documents'])}")
     st.sidebar.write(f"Chunks created: {len(data['chunks'])}")
     st.sidebar.write(f"Embeddings generated: {len(data['embeddings'])}")
-    st.sidebar.write("Retrieval mode: Hybrid (Dense + BM25)")
+    st.sidebar.write("Retrieval mode: Hybrid + Reranking")
 
     query = st.text_input("Enter your question:")
 
@@ -53,19 +53,26 @@ def main() -> None:
 
         with st.spinner("Generating answer..."):
             try:
-                result = generate_rag_answer(query=query, top_k_dense=3, top_k_bm25=3)
+                result = generate_rag_answer(
+                    query=query,
+                    top_k_dense=5,
+                    top_k_bm25=5,
+                    top_k_final=3,
+                )
 
                 st.subheader("Answer")
                 st.write(result["answer"])
 
-                st.subheader("Sources Used")
+                st.subheader("Final Reranked Sources")
                 for chunk in result["retrieved_chunks"]:
                     title = (
+                        f"Rerank #{chunk['rerank_rank']} | "
                         f"{chunk['retrieval_type'].upper()} | "
                         f"{chunk['source']} | "
                         f"{chunk['chunk_id']}"
                     )
                     with st.expander(title):
+                        st.write(f"**Reranker Score:** {chunk['reranker_score']:.4f}")
                         if "distance" in chunk:
                             st.write(f"**Dense Distance:** {chunk['distance']:.4f}")
                         if "bm25_score" in chunk:

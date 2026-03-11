@@ -4,9 +4,10 @@ from rank_bm25 import BM25Okapi
 
 from src.embeddings import load_embedding_model
 from src.vector_store import load_faiss_index_and_metadata
+from src.reranker import rerank_chunks
 
 
-def retrieve_dense_chunks(query: str, top_k: int = 3) -> List[Dict[str, Any]]:
+def retrieve_dense_chunks(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
     """
     Dense retrieval using FAISS and embeddings.
     """
@@ -29,7 +30,7 @@ def retrieve_dense_chunks(query: str, top_k: int = 3) -> List[Dict[str, Any]]:
     return results
 
 
-def retrieve_bm25_chunks(query: str, top_k: int = 3) -> List[Dict[str, Any]]:
+def retrieve_bm25_chunks(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
     """
     Sparse / lexical retrieval using BM25.
     """
@@ -55,7 +56,7 @@ def retrieve_bm25_chunks(query: str, top_k: int = 3) -> List[Dict[str, Any]]:
     return results
 
 
-def hybrid_retrieve_chunks(query: str, top_k_dense: int = 3, top_k_bm25: int = 3) -> List[Dict[str, Any]]:
+def hybrid_retrieve_chunks(query: str, top_k_dense: int = 5, top_k_bm25: int = 5) -> List[Dict[str, Any]]:
     """
     Combine dense retrieval and BM25 retrieval, then deduplicate by chunk_id.
     """
@@ -88,23 +89,36 @@ def format_retrieved_context(retrieved_chunks: List[Dict[str, Any]]) -> str:
     return "\n\n".join(context_parts)
 
 
-def prepare_rag_context(query: str, top_k_dense: int = 3, top_k_bm25: int = 3) -> Dict[str, Any]:
+def prepare_rag_context(
+    query: str,
+    top_k_dense: int = 5,
+    top_k_bm25: int = 5,
+    top_k_final: int = 3,
+) -> Dict[str, Any]:
     """
-    Hybrid retrieval pipeline:
+    Hybrid retrieval + reranking pipeline:
     - retrieve dense chunks
     - retrieve BM25 chunks
     - merge and deduplicate
-    - format them into one context string
+    - rerank with CrossEncoder
+    - format into one context string
     """
     retrieved_chunks = hybrid_retrieve_chunks(
         query=query,
         top_k_dense=top_k_dense,
         top_k_bm25=top_k_bm25,
     )
-    context = format_retrieved_context(retrieved_chunks)
+
+    reranked_chunks = rerank_chunks(
+        query=query,
+        retrieved_chunks=retrieved_chunks,
+        top_k=top_k_final,
+    )
+
+    context = format_retrieved_context(reranked_chunks)
 
     return {
         "query": query,
-        "retrieved_chunks": retrieved_chunks,
+        "retrieved_chunks": reranked_chunks,
         "context": context,
     }

@@ -29,6 +29,8 @@ Step 5 completed: Vector database and retrieval pipeline created using FAISS.
 Step 6 completed: Retriever flow now returns ranked chunks and formatted context for generation.
 Step 7 completed: End-to-end basic RAG pipeline now generates grounded answers.
 Step 8 completed: Basic RAG Research Assistant now has a live Streamlit interface.
+Step 9 completed: Advanced RAG now uses hybrid retrieval (FAISS + BM25).
+Step 10 completed: Advanced RAG now uses hybrid retrieval plus reranking.
 
 ## Run Locally
 
@@ -44,6 +46,14 @@ streamlit run app.py
 - Answer generation
 - Evaluation
 - Agentic workflows
+
+## Advanced Retrieval Upgrades
+- Hybrid Retrieval ✅
+- Reranking ✅
+- Multi-query retrieval (next)
+- Evaluation
+- Conversational RAG
+- Agentic RAG
 
 ## Author
 Bala subramanyam Pallapothu
