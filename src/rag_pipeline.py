@@ -11,14 +11,10 @@ def generate_rag_answer(
     top_k_dense: int = 5,
     top_k_bm25: int = 5,
     top_k_final: int = 3,
+    num_variations: int = 3,
 ) -> Dict[str, Any]:
     """
-    Full hybrid + reranked RAG pipeline:
-    1. Retrieve dense + BM25 candidates
-    2. Rerank them with a CrossEncoder
-    3. Format context
-    4. Send context + query to LLM
-    5. Return answer with retrieved sources
+    Full multi-query hybrid + reranked RAG pipeline.
     """
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY is missing. Please add it to your .env file.")
@@ -28,6 +24,7 @@ def generate_rag_answer(
         top_k_dense=top_k_dense,
         top_k_bm25=top_k_bm25,
         top_k_final=top_k_final,
+        num_variations=num_variations,
     )
 
     llm = ChatOpenAI(
@@ -54,6 +51,7 @@ Question:
 
     return {
         "query": query,
+        "expanded_queries": rag_data["expanded_queries"],
         "answer": response.content,
         "retrieved_chunks": rag_data["retrieved_chunks"],
         "context": rag_data["context"],

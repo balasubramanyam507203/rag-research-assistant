@@ -30,7 +30,7 @@ def setup_vector_store() -> dict:
 
 def main() -> None:
     st.title("📚 RAG Research Assistant")
-    st.write("Ask questions about your research PDFs using Hybrid Retrieval + Reranking.")
+    st.write("Ask questions about your research PDFs using Multi-Query Hybrid RAG.")
 
     try:
         data = setup_vector_store()
@@ -42,7 +42,7 @@ def main() -> None:
     st.sidebar.write(f"Documents loaded: {len(data['documents'])}")
     st.sidebar.write(f"Chunks created: {len(data['chunks'])}")
     st.sidebar.write(f"Embeddings generated: {len(data['embeddings'])}")
-    st.sidebar.write("Retrieval mode: Hybrid + Reranking")
+    st.sidebar.write("Retrieval mode: Multi-Query Hybrid + Reranking")
 
     query = st.text_input("Enter your question:")
 
@@ -58,7 +58,12 @@ def main() -> None:
                     top_k_dense=5,
                     top_k_bm25=5,
                     top_k_final=3,
+                    num_variations=3,
                 )
+
+                st.subheader("Expanded Queries")
+                for expanded_query in result["expanded_queries"]:
+                    st.write(f"- {expanded_query}")
 
                 st.subheader("Answer")
                 st.write(result["answer"])
@@ -72,6 +77,7 @@ def main() -> None:
                         f"{chunk['chunk_id']}"
                     )
                     with st.expander(title):
+                        st.write(f"**Matched Query:** {chunk.get('matched_query', 'original')}")
                         st.write(f"**Reranker Score:** {chunk['reranker_score']:.4f}")
                         if "distance" in chunk:
                             st.write(f"**Dense Distance:** {chunk['distance']:.4f}")

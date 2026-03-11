@@ -31,6 +31,7 @@ Step 7 completed: End-to-end basic RAG pipeline now generates grounded answers.
 Step 8 completed: Basic RAG Research Assistant now has a live Streamlit interface.
 Step 9 completed: Advanced RAG now uses hybrid retrieval (FAISS + BM25).
 Step 10 completed: Advanced RAG now uses hybrid retrieval plus reranking.
+Step 11 completed: Advanced RAG now uses query expansion, hybrid retrieval, and reranking.
 
 ## Run Locally
 
@@ -50,8 +51,8 @@ streamlit run app.py
 ## Advanced Retrieval Upgrades
 - Hybrid Retrieval ✅
 - Reranking ✅
-- Multi-query retrieval (next)
-- Evaluation
+- Multi-query retrieval ✅
+- Evaluation (next)
 - Conversational RAG
 - Agentic RAG
 
