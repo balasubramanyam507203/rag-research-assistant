@@ -61,8 +61,8 @@ streamlit run app.py
 - Hybrid Retrieval ✅
 - Reranking ✅
 - Multi-query retrieval ✅
-- Evaluation (next)
-- Conversational RAG
+- Evaluation ✅
+- Conversational RAG (next)
 - Agentic RAG
 
 ## Author
