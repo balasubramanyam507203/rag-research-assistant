@@ -12,6 +12,10 @@ st.set_page_config(page_title="RAG Research Assistant", page_icon="📚", layout
 
 @st.cache_resource
 def setup_vector_store() -> dict:
+    """
+    Load documents, chunk them, generate embeddings,
+    and build the FAISS vector store once.
+    """
     documents = load_documents()
     chunked_documents = chunk_documents(documents)
     chunks, embeddings = generate_embeddings(chunked_documents)
@@ -26,30 +30,19 @@ def setup_vector_store() -> dict:
 
 def main() -> None:
     st.title("📚 RAG Research Assistant")
-    st.write("Ask questions about your research PDFs using Retrieval-Augmented Generation.")
+    st.write("Ask questions about your research PDFs using Hybrid Retrieval RAG.")
 
-    if "system_ready" not in st.session_state:
-        st.session_state.system_ready = False
-        st.session_state.system_data = None
-
-    if not st.session_state.system_ready:
-        if st.button("Initialize RAG System"):
-            with st.spinner("Loading documents, generating embeddings, and building FAISS index..."):
-                try:
-                    st.session_state.system_data = setup_vector_store()
-                    st.session_state.system_ready = True
-                    st.success("RAG system initialized successfully.")
-                except Exception as error:
-                    st.error(f"Initialization failed: {error}")
-                    return
+    try:
+        data = setup_vector_store()
+    except Exception as error:
+        st.error(f"Error while preparing vector store: {error}")
         return
-
-    data = st.session_state.system_data
 
     st.sidebar.header("System Status")
     st.sidebar.write(f"Documents loaded: {len(data['documents'])}")
     st.sidebar.write(f"Chunks created: {len(data['chunks'])}")
     st.sidebar.write(f"Embeddings generated: {len(data['embeddings'])}")
+    st.sidebar.write("Retrieval mode: Hybrid (Dense + BM25)")
 
     query = st.text_input("Enter your question:")
 
@@ -60,17 +53,23 @@ def main() -> None:
 
         with st.spinner("Generating answer..."):
             try:
-                result = generate_rag_answer(query=query, top_k=3)
+                result = generate_rag_answer(query=query, top_k_dense=3, top_k_bm25=3)
 
                 st.subheader("Answer")
                 st.write(result["answer"])
 
                 st.subheader("Sources Used")
                 for chunk in result["retrieved_chunks"]:
-                    with st.expander(
-                        f"Rank {chunk['rank']} | {chunk['source']} | {chunk['chunk_id']}"
-                    ):
-                        st.write(f"**Distance:** {chunk['distance']:.4f}")
+                    title = (
+                        f"{chunk['retrieval_type'].upper()} | "
+                        f"{chunk['source']} | "
+                        f"{chunk['chunk_id']}"
+                    )
+                    with st.expander(title):
+                        if "distance" in chunk:
+                            st.write(f"**Dense Distance:** {chunk['distance']:.4f}")
+                        if "bm25_score" in chunk:
+                            st.write(f"**BM25 Score:** {chunk['bm25_score']:.4f}")
                         st.write(chunk["text"])
 
             except Exception as error:

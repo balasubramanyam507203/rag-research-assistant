@@ -5,22 +5,28 @@ from langchain_openai import ChatOpenAI
 from src.config import OPENAI_API_KEY
 from src.retriever import prepare_rag_context
 
-def generate_rag_answer(query: str, top_k: int = 3) -> Dict[str, Any]:
+
+def generate_rag_answer(query: str, top_k_dense: int = 3, top_k_bm25: int = 3) -> Dict[str, Any]:
     """
-    Full RAG pipeline:
-    1. Retrieve relevant chunks
-    2. Formate context
-    3. Send context + query to llm
+    Full hybrid RAG pipeline:
+    1. Retrieve relevant chunks using dense + BM25
+    2. Format context
+    3. Send context + query to LLM
     4. Return answer with retrieved sources
     """
     if not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY is missing. Please add it to your .env file")
-    rag_data = prepare_rag_context(query=query, top_k=top_k)
+        raise ValueError("OPENAI_API_KEY is missing. Please add it to your .env file.")
+
+    rag_data = prepare_rag_context(
+        query=query,
+        top_k_dense=top_k_dense,
+        top_k_bm25=top_k_bm25,
+    )
 
     llm = ChatOpenAI(
         model="gpt-4.1-mini",
         temperature=0,
-        api_key=OPENAI_API_KEY
+        api_key=OPENAI_API_KEY,
     )
 
     prompt = f"""
@@ -36,7 +42,7 @@ Context:
 Question:
 {query}
 """.strip()
-    
+
     response = llm.invoke(prompt)
 
     return {
